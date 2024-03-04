@@ -79,3 +79,11 @@ func (s UserService) Insert(ctx context.Context, user entity.UserRequest) (int, 
 	}
 	return result, nil
 }
+
+func (s UserService) GetById(ctx context.Context, id string) (entity.Users, error) {
+	user, err := s.UserRepository.GetByID(ctx, s.db, id)
+	if err != nil {
+		return entity.Users{}, err
+	}
+	return user, nil
+}

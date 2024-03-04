@@ -21,6 +21,7 @@ func main() {
 	http.HandleFunc("/users", userController.Get)
 	http.HandleFunc("/users/create", userController.Insert)
 	http.HandleFunc("/users/login", userController.Login)
+	http.HandleFunc("/users/detail", userController.GetById)
 	fmt.Println("Web Starting")
 	http.ListenAndServe(":8085", nil)
 }

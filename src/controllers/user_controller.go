@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"rest-api-golang-jwt/src/entity"
+	"rest-api-golang-jwt/src/helpers"
 	"rest-api-golang-jwt/src/services"
+	"strings"
 )
 
 type UserController struct {
@@ -79,6 +81,54 @@ func (c UserController) Insert(x http.ResponseWriter, r *http.Request) {
 		response := Response{
 			Code: http.StatusOK,
 			Data: result,
+		}
+		responseJson, err := json.Marshal(response)
+		if err != nil {
+			http.Error(x, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		x.Write(responseJson)
+		return
+	}
+	http.Error(x, "", http.StatusBadRequest)
+}
+
+func (c UserController) GetById(x http.ResponseWriter, r *http.Request) {
+	x.Header().Set("Content-Type", "application/json")
+
+	authorizationHeader := r.Header.Get("Authorization")
+	if authorizationHeader == "" {
+		http.Error(x, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	tokenString := strings.Replace(authorizationHeader, "Bearer ", "", -1)
+
+	bool, err := helpers.ValidateToken(tokenString)
+	if err != nil {
+		http.Error(x, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if !bool {
+		http.Error(x, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	if r.Method == "GET" {
+		id, err := helpers.ExtractToken(tokenString)
+		if err != nil {
+			http.Error(x, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		user, err := c.UserService.GetById(r.Context(), id)
+
+		if err != nil {
+			http.Error(x, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		response := Response{
+			Code: http.StatusOK,
+			Data: user,
 		}
 		responseJson, err := json.Marshal(response)
 		if err != nil {

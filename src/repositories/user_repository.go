@@ -107,3 +107,19 @@ func (r UserRepository) GetByEmail(ctx context.Context, db *sql.DB, email string
 	}
 	return user, nil
 }
+
+// create function to get data user by id
+func (r UserRepository) GetByID(ctx context.Context, db *sql.DB, id string) (entity.Users, error) {
+	conn, err := db.Conn(ctx)
+	if err != nil {
+		return entity.Users{}, err
+	}
+	defer conn.Close()
+	row := conn.QueryRowContext(ctx, `select id, "name", password, address from users where id = $1`, id)
+	var user entity.Users
+	err = row.Scan(&user.ID, &user.Name, &user.Password, &user.Address)
+	if err != nil {
+		return entity.Users{}, err
+	}
+	return user, nil
+}
